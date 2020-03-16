@@ -1,51 +1,75 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { tokenUrl, instanceLocator } from './config';
-import Cartitems from './components/Cartitems';
-import Cartitem from './components/Cartitem';
-import Navbar from './components/Navbar';
+import React from "react";
+import logo from "./logo.svg";
+import "./App.css";
+import { tokenUrl, instanceLocator } from "./config";
 
 class App extends React.Component {
+  state = {
+    newItem: "",
+    items: []
+  };
 
-    state = {
-      items: [
-        { id: 1, value: 0 },
-        { id: 2, value: 0 },
-        { id: 3, value: 0 },
-        { id: 4, value: 0 }
-      ]
+  addItem = () => {
+    //console.log("Increment Clicked for id = " + itemParm.id );
+    const newItems = [...this.state.items];
+
+    const itemToAdd = {
+      id: 1 + Math.random(),
+      value: this.state.newItem
     };
+    newItems.push(itemToAdd);
 
-    handleIncrement = itemParm => {
-      console.log("Increment Clicked for id = " + itemParm.id );
-      const newItems = [...this.state.items] ;
-      const index = newItems.indexOf(itemParm);
-      newItems[index].value = newItems[index].value + 1 ;
-      console.log("newItems[index].value = " + newItems[index].value );
-      this.setState({items:newItems})
-    };
+    this.setState({ items: newItems });
+  };
 
-    handleDelete = itemParm => {
-      const newItems = this.state.items.filter( c => c.id != itemParm.id );
-      this.setState({items:newItems});
-    }
+  updateInput = parm => {
+    //console.log("Updating New Item to  = " + parm );
+    this.state.newItem = parm;
+  };
 
+  deleteItem = itemParm => {
+    const newItems = this.state.items.filter(c => c.id != itemParm.id);
+    this.setState({ items: newItems });
+  };
 
-      render() {
-        return (
-                <div> 
-                    <Navbar totalItems= {this.state.items.filter(c => c.value > 0).length} />   
-                    <main > 
-                      <Cartitems 
-                      itms={this.state.items} 
-                      onIncrBtnClick={this.handleIncrement}
-                      onDltBtnClick = {this.handleDelete} />
-                    </main>    
-                </div>
-                );
-      }
-    }
+  render() {
+    return (
+      <div>
 
+          <input
+            type="text"
+            placeholder="Type item here"
+            defaultValue={this.state.newItem}
+            onChange={e => this.updateInput(e.target.value)}
+            className="form-control"
+          />
+
+          <button
+            className="btn btn-primary m-2"
+            onClick={() => this.addItem()}
+          >
+            Add
+          </button>
+
+        <ul>
+          {this.state.items.map(item => {
+            return (
+              <li key={item.id}>
+                {item.value}
+                <button
+                  className="btn btn-primary m-2 btn-danger"
+                  onClick={() => this.deleteItem(item)}
+                >
+                  X
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        
+      </div>
+    );
+  }
+}
 
 export default App;

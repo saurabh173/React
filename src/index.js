@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import Cartitem from './components/Cartitem';
-import Cartitems from './components/Cartitems';
-import Navbar from './components/Navbar';
 import "bootstrap/dist/css/bootstrap.css"
 import * as serviceWorker from './serviceWorker';
 
