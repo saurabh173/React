@@ -1,73 +1,69 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { tokenUrl, instanceLocator } from "./config";
+import './assets/style.css';
+import QuestionBox from './components/QuestionBox';
+import Result from './components/Result';
+
+
+import quizService from './quizService'
 
 class App extends React.Component {
   state = {
-    newItem: "",
-    items: []
+    questionBank: [],
+    responses: 0,
+    score: 0
   };
 
-  addItem = () => {
-    //console.log("Increment Clicked for id = " + itemParm.id );
-    const newItems = [...this.state.items];
+  getQuestions = () => {
+    quizService().then(question => {
+      this.setState({
+        questionBank: question
+      });
 
-    const itemToAdd = {
-      id: 1 + Math.random(),
-      value: this.state.newItem
-    };
-    newItems.push(itemToAdd);
-
-    this.setState({ items: newItems });
+    });
   };
 
-  updateInput = parm => {
-    //console.log("Updating New Item to  = " + parm );
-    this.state.newItem = parm;
-  };
+  computeAnswer = (answer, correctAnswer) => {
+    if(answer === correctAnswer){
+      this.setState({
+        score: this.state.score + 1
+      })
+    }
 
-  deleteItem = itemParm => {
-    const newItems = this.state.items.filter(c => c.id != itemParm.id);
-    this.setState({ items: newItems });
-  };
+    this.setState({
+      responses: this.state.responses < 5 ? this.state.responses + 1 :5
+    })
+  }
+
+  playAgain = () => {
+    this.getQuestions();
+       this.setState({
+        score: 0,
+        responses: 0
+      })   
+  }
+  componentDidMount(){
+    this.getQuestions();
+  }
 
   render() {
     return (
-      <div>
+        <div className ="container">
+          <div className ="title"> QuizApp </div>
 
-          <input
-            type="text"
-            placeholder="Type item here"
-            defaultValue={this.state.newItem}
-            onChange={e => this.updateInput(e.target.value)}
-            className="form-control"
-          />
-
-          <button
-            className="btn btn-primary m-2"
-            onClick={() => this.addItem()}
-          >
-            Add
-          </button>
-
-        <ul>
-          {this.state.items.map(item => {
-            return (
-              <li key={item.id}>
-                {item.value}
-                <button
-                  className="btn btn-primary m-2 btn-danger"
-                  onClick={() => this.deleteItem(item)}
-                >
-                  X
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        
-      </div>
+          {this.state.questionBank.length > 0 &&
+            this.state.responses < 5 &&
+            this.state.questionBank.map (
+              ({question, answers, correct, questionId}) => (
+                <QuestionBox question={question} options={answers} key={questionId}
+                  selected={answer => this.computeAnswer(answer,correct)}
+                />
+              )
+            )
+          }
+          {this.state.responses === 5 ? (<Result score = {this.state.score} playAgain ={this.playAgain} />) : null}
+        </div>
     );
   }
 }
