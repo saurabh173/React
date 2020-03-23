@@ -1,71 +1,52 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import './assets/style.css';
-import QuestionBox from './components/QuestionBox';
-import Result from './components/Result';
+import firebase from "./firebase";
+import {UserCard} from './UserCard'
+
+function App() {
+
+  //useState returns a pair: the current state value and a function that lets you update it. 
+  //You can call this function from an event handler or somewhere else.
+
+  const [users, setUsers] = React.useState([]);
+  const [newUserFirstName, setNewUserFirstName] = React.useState();
+
+  // By using useEffect Hook, you tell React that your component needs to do something after render. 
+  // React will remember the function you passed.
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const db = firebase.firestore();
+      const data = await db.collection("users").get();
+      setUsers(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+    };
+    fetchData();
+  }, []);
 
 
-import quizService from './quizService'
-
-class App extends React.Component {
-  state = {
-    questionBank: [],
-    responses: 0,
-    score: 0
+  const onCreate = () => {
+    const db = firebase.firestore();
+    db.collection("users").add({ firstName: newUserFirstName });
   };
 
-  getQuestions = () => {
-    quizService().then(question => {
-      this.setState({
-        questionBank: question
-      });
+  return (
+    <ul>
 
-    });
-  };
+      <input
+        value={newUserFirstName}
+        onChange={e => setNewUserFirstName(e.target.value)}
+      />
+      <button onClick={onCreate}>Create</button>
 
-  computeAnswer = (answer, correctAnswer) => {
-    if(answer === correctAnswer){
-      this.setState({
-        score: this.state.score + 1
-      })
-    }
 
-    this.setState({
-      responses: this.state.responses < 5 ? this.state.responses + 1 :5
-    })
-  }
-
-  playAgain = () => {
-    this.getQuestions();
-       this.setState({
-        score: 0,
-        responses: 0
-      })   
-  }
-  componentDidMount(){
-    this.getQuestions();
-  }
-
-  render() {
-    return (
-        <div className ="container">
-          <div className ="title"> QuizApp </div>
-
-          {this.state.questionBank.length > 0 &&
-            this.state.responses < 5 &&
-            this.state.questionBank.map (
-              ({question, answers, correct, questionId}) => (
-                <QuestionBox question={question} options={answers} key={questionId}
-                  selected={answer => this.computeAnswer(answer,correct)}
-                />
-              )
-            )
-          }
-          {this.state.responses === 5 ? (<Result score = {this.state.score} playAgain ={this.playAgain} />) : null}
-        </div>
-    );
-  }
+      {users.map(user => (
+        <li key={user.id}>
+          <UserCard user={user} />
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default App;
